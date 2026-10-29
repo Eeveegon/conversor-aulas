@@ -11,7 +11,7 @@ do Windows. A cópia PFX e a senha protegida por Windows DPAPI estão em
 ao repositório. A proteção DPAPI só pode ser aberta pelo mesmo utilizador Windows
 no mesmo computador; não constitui um backup portátil da senha.
 
-## Assinar o futuro MSI
+## Assinar o MSI
 
 ```powershell
 ./scripts/Sign-Installer.ps1 -Path ./artifacts/ConversorAulas.msi -TimestampUrl '<serviço RFC 3161>'
@@ -30,14 +30,14 @@ operação manual e deliberada, após confirmar a impressão digital do certific
 Não se instala o PFX no computador de destino. Não foi alterado nenhum repositório
 de confiança automaticamente. SmartScreen pode continuar a apresentar avisos.
 
-## Futuro fluxo GitHub
+## GitHub Actions
 
-Guardar o PFX codificado em Base64 e a senha em GitHub Actions Secrets, por exemplo
+O PFX codificado em Base64 e a senha estão configurados em GitHub Actions Secrets:
 `WINDOWS_SIGNING_CERTIFICATE_BASE64` e `WINDOWS_SIGNING_CERTIFICATE_PASSWORD`.
-O workflow deve importar o PFX no repositório Pessoal temporário do runner,
-assinar o MSI e remover o certificado no final. Não guardar PFX, senha ou o
-ficheiro DPAPI em artefactos, logs ou no Git. A configuração destes secrets e do
-workflow fica para a fase do instalador; ainda não foi efetuada.
+O workflow importa o PFX no repositório Pessoal temporário do runner,
+assina o executável e o MSI com timestamp e remove o certificado no final.
+Não guardar PFX, senha ou o ficheiro DPAPI em artefactos, logs ou no Git.
+A configuração dos secrets foi autorizada pelo titular do certificado.
 
 Para obter a senha local quando for necessário configurar o secret, importa
 `pfx-password.dpapi.xml` com `Import-Clixml` numa sessão PowerShell tua e usa o
