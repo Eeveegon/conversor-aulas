@@ -10,3 +10,4 @@ vendor/ffmpeg/doc/
 *.pfx
 *.p12
 *.key
+.codex-attachments/

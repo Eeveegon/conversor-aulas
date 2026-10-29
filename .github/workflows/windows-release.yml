@@ -94,7 +94,6 @@ jobs:
           name: windows-x64-msi-${{ github.ref_name }}
           path: |
             artifacts/release/*.msi
-            artifacts/release/*.cer
             artifacts/release/SHA256SUMS.txt
             artifacts/release/THIRD-PARTY-NOTICES.md
           if-no-files-found: error
@@ -112,7 +111,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           RELEASE_TAG: ${{ github.ref_name }}
         run: |
-          $assets = @(Get-ChildItem artifacts/release -File | Where-Object { $_.Extension -in @('.msi', '.cer') -or $_.Name -in @('SHA256SUMS.txt', 'THIRD-PARTY-NOTICES.md') } | ForEach-Object FullName)
+          $assets = @(Get-ChildItem artifacts/release -File | Where-Object { $_.Extension -eq '.msi' -or $_.Name -in @('SHA256SUMS.txt', 'THIRD-PARTY-NOTICES.md') } | ForEach-Object FullName)
           gh release create $env:RELEASE_TAG @assets --verify-tag --title "Conversor de Audio de Aulas $env:RELEASE_TAG" --notes-file "docs/releases/$env:RELEASE_TAG.md"
           if ($LASTEXITCODE -ne 0) { throw 'Release publication failed.' }
       - name: Remove signing certificate

@@ -3,7 +3,9 @@
 Identidade pessoal: **Gonçalo Barreiros**, sem associação à ACSS.
 Certificado autoassinado de assinatura de código, RSA 3072 / SHA-256, válido por
 três anos. `certificate.json` identifica o certificado; o `.cer` contém apenas
-a chave pública e pode acompanhar o instalador.
+a chave pública. O ficheiro de certificado não é publicado nos anexos da release
+nem incluído como ficheiro separado nos próximos instaladores. A identidade do
+signatário continua visível na assinatura digital do MSI e do executável.
 
 O certificado com chave privada fica no repositório **Pessoal do utilizador atual**
 do Windows. A cópia PFX e a senha protegida por Windows DPAPI estão em

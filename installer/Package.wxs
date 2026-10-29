@@ -27,6 +27,7 @@
     <Feature Id="Application" Title="Conversor de Audio de Aulas" Level="1">
       <Files Directory="INSTALLFOLDER" Include="$(var.PublishDir)\**">
         <Exclude Files="$(var.PublishDir)\**.pdb" />
+        <Exclude Files="$(var.PublishDir)\**.cer" />
       </Files>
       <ComponentRef Id="StartMenuShortcut" />
     </Feature>

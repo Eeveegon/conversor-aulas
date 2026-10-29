@@ -8,7 +8,7 @@ Obtém o MSI na [release 0.1.1](https://github.com/Eeveegon/conversor-aulas/rele
 O nome no menu Iniciar e nas aplicações instaladas é **Conversor de Audio de Aulas**.
 Requer Windows 10 versão 2004 ou superior / Windows 11, x64. O pacote instala em Program Files para todos os utilizadores e inclui os runtimes .NET / Windows App SDK e o FFmpeg. Pode pedir autorização de administrador.
 
-MSI e executável são assinados por **Gonçalo Barreiros** com um certificado autoassinado. O certificado público acompanha a release; não é instalado como certificado de confiança automaticamente. Windows e SmartScreen podem apresentar avisos. Ver `signing/README.md`.
+MSI e executável são assinados por **Gonçalo Barreiros** com um certificado autoassinado. Não é publicado um ficheiro de certificado separado. Não são instalados certificados de confiança automaticamente. Windows e SmartScreen podem apresentar avisos. Ver `signing/README.md`.
 
 ## Funcionalidades
 
@@ -44,7 +44,7 @@ dotnet tool install --global wix --version 6.0.2
 ./scripts/Build-Installer.ps1 -Sign
 ```
 
-O pacote fica em `artifacts/release`, acompanhado pelo certificado público, avisos de terceiros e SHA-256. `.private`, binários obtidos, amostras e resultados de compilação são ignorados pelo Git.
+O pacote fica em `artifacts/release`, acompanhado pelos avisos de terceiros e SHA-256. `.private`, binários obtidos, amostras e resultados de compilação são ignorados pelo Git.
 
 ## GitHub Actions
 
