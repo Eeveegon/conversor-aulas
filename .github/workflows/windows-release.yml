@@ -24,8 +24,8 @@ jobs:
     env:
       DOTNET_CLI_TELEMETRY_OPTOUT: '1'
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-dotnet@v4
+      - uses: actions/checkout@v5
+      - uses: actions/setup-dotnet@v5
         with:
           global-json-file: global.json
       - name: Install pinned WiX
@@ -89,7 +89,7 @@ jobs:
           if ($installers.Count -ne 1) { throw 'Expected exactly one MSI.' }
           ./scripts/Test-Installer.ps1 -Path $installers[0].FullName -Install
       - name: Upload installer artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: windows-x64-msi-${{ github.ref_name }}
           path: |
@@ -98,6 +98,13 @@ jobs:
             artifacts/release/SHA256SUMS.txt
             artifacts/release/THIRD-PARTY-NOTICES.md
           if-no-files-found: error
+      - name: Upload installer diagnostic logs
+        if: failure()
+        uses: actions/upload-artifact@v5
+        with:
+          name: installer-diagnostics-${{ github.run_id }}
+          path: artifacts/release/logs/*.log
+          if-no-files-found: ignore
       - name: Publish release
         if: startsWith(github.ref, 'refs/tags/')
         shell: pwsh

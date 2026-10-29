@@ -26,7 +26,10 @@ New-Item -ItemType Directory -Path $logDirectory -Force | Out-Null
 $installed = $false
 try {
     $process = Start-Process msiexec.exe -ArgumentList @('/i', "`"$installerPath`"", '/qn', '/norestart', '/l*v', "`"$(Join-Path $logDirectory 'install.log')`"") -Wait -PassThru -WindowStyle Hidden
-    if ($process.ExitCode -notin @(0, 3010)) { throw "Instalação falhou: $($process.ExitCode)" }
+    if ($process.ExitCode -notin @(0, 3010)) {
+        Get-Content -LiteralPath (Join-Path $logDirectory 'install.log') -Tail 100 | Write-Host
+        throw "Instalação falhou: $($process.ExitCode)"
+    }
     $installed = $true
     $installDirectory = Join-Path $env:ProgramFiles 'Conversor de Audio de Aulas'
     foreach ($relativePath in @('ConversorAulas.App.exe', 'Assets\AppIcon.ico', 'ffmpeg\ffmpeg.exe', 'ffmpeg\ffprobe.exe')) {

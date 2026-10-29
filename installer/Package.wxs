@@ -4,7 +4,10 @@
            Language="2070" Codepage="65001" Scope="perMachine" InstallerVersion="500">
     <MajorUpgrade DowngradeErrorMessage="Já está instalada uma versão mais recente do Conversor de Audio de Aulas." />
     <MediaTemplate EmbedCab="yes" CompressionLevel="high" />
-    <Launch Condition="Installed OR (VersionNT64 AND WindowsBuild &gt;= 19041)" Message="Esta aplicação requer Windows 10 versão 2004 ou superior, ou Windows 11, em 64 bits." />
+    <Property Id="WINDOWSBUILDNUMBER" Secure="yes">
+      <RegistrySearch Id="WindowsBuildNumberSearch" Root="HKLM" Key="SOFTWARE\Microsoft\Windows NT\CurrentVersion" Name="CurrentBuildNumber" Type="raw" Bitness="always64" />
+    </Property>
+    <Launch Condition="Installed OR (VersionNT64 AND WINDOWSBUILDNUMBER &gt;= 19041)" Message="Esta aplicação requer Windows 10 versão 2004 ou superior, ou Windows 11, em 64 bits." />
     <Icon Id="AppIcon" SourceFile="$(var.ProjectRoot)\src\ConversorAulas.App\Assets\AppIcon.ico" />
     <Property Id="ARPPRODUCTICON" Value="AppIcon" />
     <Property Id="ARPHELPLINK" Value="https://github.com/Eeveegon/conversor-aulas" />
