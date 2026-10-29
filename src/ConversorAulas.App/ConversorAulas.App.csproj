@@ -19,6 +19,7 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <ApplicationTitle>Conversor de Audio de Aulas</ApplicationTitle>
+    <AssemblyTitle>Conversor de Audio de Aulas</AssemblyTitle>
     <Product>Conversor de Audio de Aulas</Product>
     <Company>Gonçalo Barreiros</Company>
     <Description>Converte gravações de aulas para ficheiros Opus mais pequenos.</Description>
