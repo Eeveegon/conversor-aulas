@@ -1,0 +1,9 @@
+{
+  "subject": "CN=Gonçalo Barreiros",
+  "thumbprint": "F646E34FB5F434D25DB5F43C71C2EBDDBC72FE2F",
+  "notBefore": "2026-10-29T12:12:36.0000000Z",
+  "notAfter": "2029-10-29T12:22:35.0000000Z",
+  "purpose": "Code signing - Conversor de Audio de Aulas MSI",
+  "algorithm": "RSA 3072 / SHA-256",
+  "publicCertificateSha256": "050EE167FD273787DD934A836A9CCC011DCB84D03ED5655600DEE3E39EADC51E"
+}

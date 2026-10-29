@@ -1,0 +1,12 @@
+**/bin/
+**/obj/
+.vs/
+.tools/
+artifacts/
+vendor/ffmpeg/*.exe
+vendor/ffmpeg/doc/
+*.user
+.private/
+*.pfx
+*.p12
+*.key

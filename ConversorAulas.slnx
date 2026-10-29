@@ -1,0 +1,9 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/ConversorAulas.App/ConversorAulas.App.csproj" />
+    <Project Path="src/ConversorAulas.Core/ConversorAulas.Core.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/ConversorAulas.IntegrationTests/ConversorAulas.IntegrationTests.csproj" />
+  </Folder>
+</Solution>

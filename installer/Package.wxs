@@ -1,0 +1,31 @@
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
+  <Package Name="Conversor de Audio de Aulas" Manufacturer="Gonçalo Barreiros"
+           Version="$(var.ProductVersion)" UpgradeCode="{D4201946-4CED-452D-9B56-87A07565B6CA}"
+           Language="2070" Codepage="65001" Scope="perMachine" InstallerVersion="500">
+    <MajorUpgrade DowngradeErrorMessage="Já está instalada uma versão mais recente do Conversor de Audio de Aulas." />
+    <MediaTemplate EmbedCab="yes" CompressionLevel="high" />
+    <Launch Condition="Installed OR (VersionNT64 AND WindowsBuild &gt;= 19041)" Message="Esta aplicação requer Windows 10 versão 2004 ou superior, ou Windows 11, em 64 bits." />
+    <Icon Id="AppIcon" SourceFile="$(var.ProjectRoot)\src\ConversorAulas.App\Assets\AppIcon.ico" />
+    <Property Id="ARPPRODUCTICON" Value="AppIcon" />
+    <Property Id="ARPHELPLINK" Value="https://github.com/Eeveegon/conversor-aulas" />
+    <StandardDirectory Id="ProgramFiles64Folder">
+      <Directory Id="INSTALLFOLDER" Name="Conversor de Audio de Aulas" />
+    </StandardDirectory>
+    <StandardDirectory Id="ProgramMenuFolder">
+      <Directory Id="AppMenuFolder" Name="Conversor de Audio de Aulas">
+        <Component Id="StartMenuShortcut" Guid="{8EF42527-C694-4EC1-AB83-34AD9FA2D3A5}" Bitness="always64">
+          <Shortcut Id="AppShortcut" Name="Conversor de Audio de Aulas" Description="Converter gravações de aulas para Opus"
+                    Target="[INSTALLFOLDER]ConversorAulas.App.exe" WorkingDirectory="INSTALLFOLDER" Icon="AppIcon" />
+          <RemoveFolder Id="RemoveAppMenuFolder" On="uninstall" />
+          <RegistryValue Root="HKLM" Key="Software\GoncaloBarreiros\ConversorAulas" Name="Installed" Value="1" Type="integer" KeyPath="yes" />
+        </Component>
+      </Directory>
+    </StandardDirectory>
+    <Feature Id="Application" Title="Conversor de Audio de Aulas" Level="1">
+      <Files Directory="INSTALLFOLDER" Include="$(var.PublishDir)\**">
+        <Exclude Files="$(var.PublishDir)\**.pdb" />
+      </Files>
+      <ComponentRef Id="StartMenuShortcut" />
+    </Feature>
+  </Package>
+</Wix>

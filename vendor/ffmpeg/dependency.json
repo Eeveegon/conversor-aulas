@@ -1,0 +1,8 @@
+{
+  "version": "9.0.2",
+  "distribution": "Gyan Essentials Windows x64",
+  "url": "https://github.com/GyanD/codexffmpeg/releases/download/9.0.2/ffmpeg-9.0.2-essentials_build.zip",
+  "sha256": "60F467265B1E312373DBCD92200C2618A74850F98D3D078E94296BB3FA2047BA",
+  "directory": "ffmpeg-9.0.2-essentials_build",
+  "sourceUrl": "https://github.com/FFmpeg/FFmpeg/commit/946fcce07b"
+}
