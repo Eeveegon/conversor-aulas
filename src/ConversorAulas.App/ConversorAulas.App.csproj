@@ -22,8 +22,8 @@
     <AssemblyTitle>Conversor de Audio de Aulas</AssemblyTitle>
     <Product>Conversor de Audio de Aulas</Product>
     <Company>Gonçalo Barreiros</Company>
-    <Description>Converte gravações de aulas para ficheiros Opus mais pequenos.</Description>
-    <Version>0.1.1</Version>
+    <Description>Converte gravações de aulas para Opus ou M4A/AAC.</Description>
+    <Version>0.2.0</Version>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.8.260921001" />

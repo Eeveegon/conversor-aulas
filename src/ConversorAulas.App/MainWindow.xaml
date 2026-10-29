@@ -16,11 +16,23 @@
      <TextBlock x:Name="OutputFormatText" Text="Formato de saída: Opus (.opus) · 64 kbps · 48 kHz" FontWeight="SemiBold" TextWrapping="Wrap"/>
      <TextBlock Text="Todos os áudios serão convertidos para este formato. As cópias ficam na mesma pasta, sem alterar os originais." TextWrapping="Wrap" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
     </StackPanel>
-    <controls:AudioFrequencyComboBox x:Name="SampleRateBox" Grid.Column="2" Header="Frequência" Width="185" VerticalAlignment="Center" SelectedIndex="0" SelectionChanged="SampleRate_Changed">
+    <StackPanel Grid.Column="2" Spacing="8" Width="200" VerticalAlignment="Center">
+    <controls:AudioFrequencyComboBox x:Name="FormatBox" Header="Formato" HorizontalAlignment="Stretch" SelectedIndex="0" SelectionChanged="Format_Changed">
+     <ComboBoxItem Content="Opus (.opus)"/>
+     <ComboBoxItem Content="AAC (.m4a)"/>
+    </controls:AudioFrequencyComboBox>
+    <controls:AudioFrequencyComboBox x:Name="SampleRateBox" Header="Frequência" HorizontalAlignment="Stretch" SelectedIndex="0" SelectionChanged="SampleRate_Changed">
      <ComboBoxItem Content="48 kHz (recomendado)" Tag="48000"/>
      <ComboBoxItem Content="24 kHz (voz)" Tag="24000"/>
      <ComboBoxItem Content="16 kHz (voz)" Tag="16000"/>
     </controls:AudioFrequencyComboBox>
+    <controls:AudioFrequencyComboBox x:Name="AacSampleRateBox" Header="Frequência" HorizontalAlignment="Stretch" SelectedIndex="0" SelectionChanged="SampleRate_Changed" Visibility="Collapsed">
+     <ComboBoxItem Content="44,1 kHz (recomendado)" Tag="44100"/>
+     <ComboBoxItem Content="48 kHz" Tag="48000"/>
+     <ComboBoxItem Content="24 kHz (voz)" Tag="24000"/>
+     <ComboBoxItem Content="16 kHz (voz)" Tag="16000"/>
+    </controls:AudioFrequencyComboBox>
+    </StackPanel>
    </Grid>
   </Border>
   <Grid Grid.Row="2"><Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>

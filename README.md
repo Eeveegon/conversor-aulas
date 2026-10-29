@@ -1,10 +1,11 @@
 # Conversor de Audio de Aulas
 
-Aplicação pessoal para Windows x64, em C# / .NET 10 e WinUI 3. Converte gravações em cópias Opus mais pequenas, na mesma pasta dos originais. Funciona localmente, sem contas, serviços nem envio de áudio.
+Aplicação pessoal para Windows x64, em C# / .NET 10 e WinUI 3. Converte gravações em cópias Opus ou M4A/AAC, na mesma pasta dos originais. Funciona localmente, sem contas, serviços nem envio de áudio.
 
 ## Instalação
 
-Obtém o MSI na [release 0.1.1](https://github.com/Eeveegon/conversor-aulas/releases/tag/v0.1.1).
+Obtém o MSI na [release 0.2](https://github.com/Eeveegon/conversor-aulas/releases/tag/v0.2.0) (versão técnica/MSI: 0.2.0).
+Para atualizar a 0.1.1, fecha a aplicação e executa o novo MSI diretamente, sem desinstalar primeiro.
 O nome no menu Iniciar e nas aplicações instaladas é **Conversor de Audio de Aulas**.
 Requer Windows 10 versão 2004 ou superior / Windows 11, x64. O pacote instala em Program Files para todos os utilizadores e inclui os runtimes .NET / Windows App SDK e o FFmpeg. Pode pedir autorização de administrador.
 
@@ -15,9 +16,11 @@ MSI e executável são assinados por **Gonçalo Barreiros** com um certificado a
 - Vários ficheiros, pastas, subpastas opcionais e arrastar e largar.
 - Entrada M4A, AAC, WAV, MP3, FLAC e outros formatos suportados pelo FFmpeg.
 - Saída Opus a 64 kbps VBR e 48 kHz por defeito; opções 24 e 16 kHz para voz.
+- Saída AAC-LC em `.m4a`, a 64 kbps e em mono; 44,1 kHz por defeito, com opções 48, 24 e 16 kHz.
+- Guarda o último formato e a frequência de cada formato em `%LOCALAPPDATA%\ConversorAulas\preferences.json`, por utilizador.
 - Tema claro/escuro conforme o Windows, incluindo a barra de título.
 - Progresso, cancelamento e erros por ficheiro com possibilidade de repetir.
-- Nome `Aula - comprimido.opus`, com numeração quando já existe uma cópia.
+- Nome `Aula - comprimido.opus` ou `Aula - comprimido.m4a`, com numeração quando já existe uma cópia. A pesquisa de pastas ignora as cópias dos dois formatos.
 - Verificação de codec/duração antes de publicar a cópia; originais preservados.
 
 Compressão com perdas, mantendo boa qualidade de audição. Uma entrada já muito comprimida pode não ficar menor. A frequência escolhida é a de entrada no codificador; alguns leitores apresentam sempre a base temporal Opus de 48 kHz.
@@ -54,6 +57,6 @@ Secrets necessários: `WINDOWS_SIGNING_CERTIFICATE_BASE64` e `WINDOWS_SIGNING_CE
 
 ## Verificação
 
-18 verificações de integração com FFmpeg real: M4A/AAC/WAV, duração, integridade dos originais, colisões, perfis 48/24/16 kHz, erro e cancelamento. O teste MSI valida metadados e, com `-Install`, instalação, ficheiros, atalho, registo e desinstalação. `-Install` destina-se ao runner descartável.
+55 verificações de integração com FFmpeg real: ambos os formatos de saída, AAC-LC/mono/bitrate/contentor, frequências, duração, integridade dos originais, colisões, preferências persistentes, erro e cancelamento. O teste MSI valida metadados e, com `-Install`, instalação, ficheiros, versão, atalho, registo e desinstalação. `-UpgradeFrom <MSI anterior>` verifica a compatibilidade dos pacotes e, com `-Install`, testa a atualização real e o bloqueio de downgrade. `-Install` destina-se ao runner descartável limpo. O CI descarrega e verifica o SHA-256 da release 0.1.1 para este teste.
 
 Para diagnóstico opcional de exceções da interface, define `CONVERSOR_DIAGNOSTICS` com um caminho gravável antes de abrir a aplicação.

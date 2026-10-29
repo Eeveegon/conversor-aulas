@@ -2,7 +2,7 @@
   <Package Name="Conversor de Audio de Aulas" Manufacturer="Gonçalo Barreiros"
            Version="$(var.ProductVersion)" UpgradeCode="{D4201946-4CED-452D-9B56-87A07565B6CA}"
            Language="2070" Codepage="65001" Scope="perMachine" InstallerVersion="500">
-    <MajorUpgrade DowngradeErrorMessage="Já está instalada uma versão mais recente do Conversor de Audio de Aulas." />
+    <MajorUpgrade Schedule="afterInstallInitialize" DowngradeErrorMessage="Já está instalada uma versão mais recente do Conversor de Audio de Aulas." />
     <MediaTemplate EmbedCab="yes" CompressionLevel="high" />
     <Property Id="WINDOWSBUILDNUMBER" Secure="yes">
       <RegistrySearch Id="WindowsBuildNumberSearch" Root="HKLM" Key="SOFTWARE\Microsoft\Windows NT\CurrentVersion" Name="CurrentBuildNumber" Type="raw" Bitness="always64" />
@@ -17,7 +17,7 @@
     <StandardDirectory Id="ProgramMenuFolder">
       <Directory Id="AppMenuFolder" Name="Conversor de Audio de Aulas">
         <Component Id="StartMenuShortcut" Guid="{8EF42527-C694-4EC1-AB83-34AD9FA2D3A5}" Bitness="always64">
-          <Shortcut Id="AppShortcut" Name="Conversor de Audio de Aulas" Description="Converter gravações de aulas para Opus"
+          <Shortcut Id="AppShortcut" Name="Conversor de Audio de Aulas" Description="Converter gravações de aulas para Opus ou M4A/AAC"
                     Target="[INSTALLFOLDER]ConversorAulas.App.exe" WorkingDirectory="INSTALLFOLDER" Icon="AppIcon" />
           <RemoveFolder Id="RemoveAppMenuFolder" On="uninstall" />
           <RegistryValue Root="HKLM" Key="Software\GoncaloBarreiros\ConversorAulas" Name="Installed" Value="1" Type="integer" KeyPath="yes" />

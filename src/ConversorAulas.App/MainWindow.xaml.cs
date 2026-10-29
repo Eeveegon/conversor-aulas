@@ -15,10 +15,17 @@ public sealed partial class MainWindow : Window
     private CancellationTokenSource? conversionCancellation;
     private bool busy;
     private bool adding;
+    private bool preferencesReady;
 
     public MainWindow()
     {
         InitializeComponent();
+        var preferences = ConversionPreferences.Load(ConversionPreferences.DefaultPath);
+        FormatBox.SelectedIndex = preferences.OutputFormat == AudioOutputFormat.M4a ? 1 : 0;
+        SampleRateBox.SelectedIndex = preferences.OpusSampleRate switch { 24000 => 1, 16000 => 2, _ => 0 };
+        AacSampleRateBox.SelectedIndex = preferences.AacSampleRate switch { 48000 => 1, 24000 => 2, 16000 => 3, _ => 0 };
+        preferencesReady = true;
+        UpdateOutputProfile();
         AppWindow.SetIcon(System.IO.Path.Combine(AppContext.BaseDirectory, "Assets", "AppIcon.ico"));
         SystemBackdrop = new Microsoft.UI.Xaml.Media.MicaBackdrop();
         AppWindow.Resize(new Windows.Graphics.SizeInt32(1040, 780));
@@ -53,12 +60,32 @@ public sealed partial class MainWindow : Window
         titleBar.ButtonHoverForegroundColor = titleBar.ButtonPressedForegroundColor = foreground;
     }
 
-    private int SelectedSampleRate => SampleRateBox?.SelectedItem is ComboBoxItem { Tag: string value } && int.TryParse(value, out var rate) ? rate : 48000;
+    private static int ReadSampleRate(ComboBox? box, int fallback) => box?.SelectedItem is ComboBoxItem { Tag: string value } && int.TryParse(value, out var rate) ? rate : fallback;
+    private int SelectedSampleRate => SelectedOutputFormat == AudioOutputFormat.M4a ? ReadSampleRate(AacSampleRateBox, 44100) : ReadSampleRate(SampleRateBox, 48000);
+    private AudioOutputFormat SelectedOutputFormat => FormatBox?.SelectedIndex == 1 ? AudioOutputFormat.M4a : AudioOutputFormat.Opus;
 
-    private void SampleRate_Changed(object sender, SelectionChangedEventArgs e)
+    private void Format_Changed(object sender, SelectionChangedEventArgs e) => SavePreferences();
+    private void SampleRate_Changed(object sender, SelectionChangedEventArgs e) => SavePreferences();
+
+    private void SavePreferences()
     {
-        if (OutputFormatText is not null)
-            OutputFormatText.Text = $"Formato de saída: Opus (.opus) · 64 kbps · {SelectedSampleRate / 1000} kHz";
+        if (!preferencesReady) return;
+        UpdateOutputProfile();
+        try { new ConversionPreferences(SelectedOutputFormat, ReadSampleRate(SampleRateBox, 48000), ReadSampleRate(AacSampleRateBox, 44100)).Save(ConversionPreferences.DefaultPath); }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            ShowNotice("A opção foi selecionada, mas não foi possível guardá-la para a próxima utilização.", InfoBarSeverity.Warning);
+        }
+    }
+
+    private void UpdateOutputProfile()
+    {
+        var isM4a = SelectedOutputFormat == AudioOutputFormat.M4a;
+        var frequency = (SelectedSampleRate / 1000d).ToString("0.#", System.Globalization.CultureInfo.GetCultureInfo("pt-PT"));
+        OutputFormatText.Text = isM4a ? $"Formato de saída: AAC (.m4a) · 64 kbps · {frequency} kHz · Mono"
+            : $"Formato de saída: Opus (.opus) · 64 kbps · {SelectedSampleRate / 1000} kHz";
+        SampleRateBox.Visibility = isM4a ? Visibility.Collapsed : Visibility.Visible;
+        AacSampleRateBox.Visibility = isM4a ? Visibility.Visible : Visibility.Collapsed;
     }
 
     private async void AddFiles_Click(object sender, RoutedEventArgs e)
@@ -139,6 +166,7 @@ public sealed partial class MainWindow : Window
         var pending = items.Where(item => !item.Completed).ToArray();
         if (pending.Length == 0) return;
         var sampleRate = SelectedSampleRate;
+        var outputFormat = SelectedOutputFormat;
         busy = true;
         using var cancellation = new CancellationTokenSource();
         conversionCancellation = cancellation;
@@ -168,7 +196,7 @@ public sealed partial class MainWindow : Window
                         item.Progress = value;
                         TotalProgress.Value = (currentIndex + value / 100) / pending.Length * 100;
                     });
-                    var result = await converter.ConvertAsync(item.Path, progress, cancellation.Token, sampleRate);
+                    var result = await converter.ConvertAsync(item.Path, progress, cancellation.Token, sampleRate, outputFormat);
                     item.Completed = true;
                     item.Progress = 100;
                     var reduction = 100d * (1 - (double)result.OutputBytes / result.OriginalBytes);
@@ -221,6 +249,8 @@ public sealed partial class MainWindow : Window
     {
         FilesButton.IsEnabled = FolderButton.IsEnabled = SubfoldersCheck.IsEnabled = !busy && !adding;
         SampleRateBox.IsEnabled = !busy && !adding;
+        AacSampleRateBox.IsEnabled = !busy && !adding;
+        FormatBox.IsEnabled = !busy && !adding;
         ClearButton.IsEnabled = !busy && !adding && items.Count > 0;
         ConvertButton.IsEnabled = !busy && !adding && items.Any(item => !item.Completed);
         CancelButton.Visibility = TotalProgress.Visibility = busy ? Visibility.Visible : Visibility.Collapsed;

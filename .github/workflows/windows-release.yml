@@ -88,6 +88,20 @@ jobs:
           $installers = @(Get-ChildItem artifacts/release/*.msi)
           if ($installers.Count -ne 1) { throw 'Expected exactly one MSI.' }
           ./scripts/Test-Installer.ps1 -Path $installers[0].FullName -Install
+      - name: Test upgrade from released 0.1.1 and block downgrade
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $previous = Join-Path $env:RUNNER_TEMP 'previous-release'
+          gh release download v0.1.1 --repo "$env:GITHUB_REPOSITORY" --pattern '*.msi' --pattern 'SHA256SUMS.txt' --dir $previous
+          if ($LASTEXITCODE -ne 0) { throw 'Could not download the released 0.1.1 installer.' }
+          $oldInstaller = Get-Item (Join-Path $previous 'Conversor-de-Audio-de-Aulas-0.1.1-win-x64.msi')
+          $expected = (Get-Content (Join-Path $previous 'SHA256SUMS.txt') | Where-Object { $_ -match [regex]::Escape($oldInstaller.Name) }).Split(' ', [StringSplitOptions]::RemoveEmptyEntries)[0]
+          if ((Get-FileHash $oldInstaller.FullName -Algorithm SHA256).Hash -ne $expected) { throw 'Previous release checksum mismatch.' }
+          $installer = @(Get-ChildItem artifacts/release/*.msi)[0]
+          ./scripts/Test-Installer.ps1 -Path $installer.FullName -UpgradeFrom $oldInstaller.FullName -Install
       - name: Upload installer artifacts
         uses: actions/upload-artifact@v5
         with:

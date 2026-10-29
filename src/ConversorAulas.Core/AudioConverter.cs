@@ -5,7 +5,9 @@ using System.Text.Json;
 namespace ConversorAulas.Core;
 
 public sealed record ConversionResult(string OutputPath, long OriginalBytes, long OutputBytes);
-public sealed record AudioInfo(double Duration, string Codec);
+public sealed record AudioInfo(double Duration, string Codec, int SampleRate, int Channels);
+
+public enum AudioOutputFormat { Opus, M4a }
 
 public sealed class AudioConverter(string toolsDirectory)
 {
@@ -20,7 +22,7 @@ public sealed class AudioConverter(string toolsDirectory)
 
     public async Task<AudioInfo> ProbeAsync(string path, CancellationToken cancellationToken = default)
     {
-        var json = await RunAsync(ffprobe, ["-v", "error", "-select_streams", "a:0", "-show_entries", "stream=codec_name,duration:format=duration", "-of", "json", path], null, cancellationToken);
+        var json = await RunAsync(ffprobe, ["-v", "error", "-select_streams", "a:0", "-show_entries", "stream=codec_name,duration,sample_rate,channels:format=duration", "-of", "json", path], null, cancellationToken);
         using var document = JsonDocument.Parse(json);
         var root = document.RootElement;
         if (!root.TryGetProperty("streams", out var streams) || streams.GetArrayLength() == 0)
@@ -31,25 +33,34 @@ public sealed class AudioConverter(string toolsDirectory)
             double.TryParse(value.GetString(), CultureInfo.InvariantCulture, out duration);
         if (duration <= 0 && stream.TryGetProperty("duration", out var streamDuration))
             double.TryParse(streamDuration.GetString(), CultureInfo.InvariantCulture, out duration);
-        return new AudioInfo(duration, stream.GetProperty("codec_name").GetString() ?? "");
+        return new AudioInfo(duration, stream.GetProperty("codec_name").GetString() ?? "",
+            int.Parse(stream.GetProperty("sample_rate").GetString()!, CultureInfo.InvariantCulture), stream.GetProperty("channels").GetInt32());
     }
 
-    public async Task<ConversionResult> ConvertAsync(string inputPath, IProgress<double>? progress = null, CancellationToken cancellationToken = default, int sampleRate = 48000)
+    public async Task<ConversionResult> ConvertAsync(string inputPath, IProgress<double>? progress = null, CancellationToken cancellationToken = default, int? sampleRate = null, AudioOutputFormat outputFormat = AudioOutputFormat.Opus)
     {
-        if (sampleRate is not (48000 or 24000 or 16000))
+        if (!Enum.IsDefined(outputFormat)) throw new ArgumentOutOfRangeException(nameof(outputFormat));
+        var isM4a = outputFormat == AudioOutputFormat.M4a;
+        var rate = sampleRate ?? (isM4a ? 44100 : 48000);
+        if (!isM4a && rate is not (48000 or 24000 or 16000))
             throw new ArgumentOutOfRangeException(nameof(sampleRate), "Escolhe 48, 24 ou 16 kHz, frequências compatíveis com Opus.");
+        if (isM4a && rate is not (44100 or 48000 or 24000 or 16000))
+            throw new ArgumentOutOfRangeException(nameof(sampleRate), "Escolhe 44,1, 48, 24 ou 16 kHz para AAC.");
         EnsureAvailable();
         inputPath = Path.GetFullPath(inputPath);
         var originalBytes = new FileInfo(inputPath).Length;
         var info = await ProbeAsync(inputPath, cancellationToken);
         // A temporary file in the same folder allows an atomic final rename.
-        var temporaryPath = Path.Combine(Path.GetDirectoryName(inputPath)!, $".conversor-{Guid.NewGuid():N}.tmp.opus");
+        var extension = isM4a ? ".m4a" : ".opus";
+        var temporaryPath = Path.Combine(Path.GetDirectoryName(inputPath)!, $".conversor-{Guid.NewGuid():N}.tmp{extension}");
         try
         {
+            string[] encodingArguments = isM4a
+                ? ["-c:a", "aac", "-profile:a", "aac_low", "-b:a", "64k", "-ar", rate.ToString(CultureInfo.InvariantCulture), "-ac", "1", "-movflags", "+faststart", "-f", "ipod"]
+                : ["-c:a", "libopus", "-b:a", "64k", "-vbr", "on", "-ar", rate.ToString(CultureInfo.InvariantCulture), "-ac", "2", "-application", "audio", "-f", "opus"];
             await RunAsync(ffmpeg,
                 ["-hide_banner", "-loglevel", "error", "-nostdin", "-n", "-i", inputPath,
-                 "-map", "0:a:0", "-vn", "-map_metadata", "0", "-c:a", "libopus", "-b:a", "64k",
-                 "-vbr", "on", "-ar", sampleRate.ToString(CultureInfo.InvariantCulture), "-ac", "2", "-application", "audio", "-f", "opus",
+                 "-map", "0:a:0", "-vn", "-map_metadata", "0", .. encodingArguments,
                  "-progress", "pipe:1", "-nostats", temporaryPath],
                 line =>
                 {
@@ -59,11 +70,12 @@ public sealed class AudioConverter(string toolsDirectory)
                 }, cancellationToken);
 
             var outputInfo = await ProbeAsync(temporaryPath, cancellationToken);
-            if (outputInfo.Codec != "opus" || new FileInfo(temporaryPath).Length == 0
+            if (outputInfo.Codec != (isM4a ? "aac" : "opus") || new FileInfo(temporaryPath).Length == 0
+                || (isM4a && (outputInfo.SampleRate != rate || outputInfo.Channels != 1))
                 || (info.Duration > 0 && Math.Abs(outputInfo.Duration - info.Duration) > Math.Max(2, info.Duration * .01)))
                 throw new InvalidDataException("A cópia convertida não passou a verificação de integridade.");
             cancellationToken.ThrowIfCancellationRequested();
-            var outputPath = MoveToAvailableName(temporaryPath, inputPath);
+            var outputPath = MoveToAvailableName(temporaryPath, inputPath, extension);
             progress?.Report(100);
             return new ConversionResult(outputPath, originalBytes, new FileInfo(outputPath).Length);
         }
@@ -74,12 +86,12 @@ public sealed class AudioConverter(string toolsDirectory)
         }
     }
 
-    private static string MoveToAvailableName(string temporaryPath, string inputPath)
+    private static string MoveToAvailableName(string temporaryPath, string inputPath, string extension)
     {
         var stem = Path.Combine(Path.GetDirectoryName(inputPath)!, Path.GetFileNameWithoutExtension(inputPath) + " - comprimido");
         for (var number = 1; ; number++)
         {
-            var candidate = stem + (number == 1 ? "" : $" ({number})") + ".opus";
+            var candidate = stem + (number == 1 ? "" : $" ({number})") + extension;
             try { File.Move(temporaryPath, candidate, overwrite: false); return candidate; }
             catch (IOException) when (File.Exists(candidate)) { }
         }
